@@ -1,0 +1,150 @@
+:://;long notes goto:28
+
+rem Winders loves to start at Z: // for everything \\ pushd/unc etc
+rem I get why cause it's the fucking only thing left using "if not exist"
+rem pushd=great for unc as it's simple one-liner, but forget popd and fuckin-A
+
+rem subst on the other had is great for almost anything but it doesn't auto-assign
+rem it's also great to cleanup after, for both the symlink and mountpoint, as subst gives both
+rem if you also employ the delayedexpansion while building your array you can invert the response
+
+rem ie if not exist %%i set use=%%i // results in last which is zyx etc
+rem as some apps etc don't like or allow mounting below C: for some reason
+rem with delays instead of building the array "x=!x! %%x" flip it around
+rem doing this also will get rid of the leading space that will often show up
+rem like in above example as technically your results show on pass two 
+rem the first pass is going to give you that gap and tilde don't/can't/won't clear it
+rem by inverting and doing "x=%%x !x!" you can still keep space as a delimiter 
+rem your results will also become inverted so right2left now is left2right
+rem so sticking with drive results come back as zxy etc
+rem now you'll get abc, so why Z: is often in use so subst is out there
+rem I'm pretty sure A: B: are almost always fucking available cause who uses floppies anymore
+rem I actually do use a/b by changing drives off d/e and why I went with U: to start
+rem anyways too long of notes and this still needs cleaning as a lot of fuckery is present
+
+
+
+
+@echo off
+
+set globalSeed=%random%
+set gs=%globalSeed%
+
+
+:getAvailable
+for %%Z in (%%Z) do ( 
+set topAvail=
+	if not defined topAvail ( 
+	for %%Y in (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) do ( 
+		for %%X in (%%Y:) do ( 
+			for %%W in (%%X) do ( 
+	for %%z in (%%z) do ( if exist %%X echo:mounted: %%X &set "topAvail=%%X" ) 
+	for %%y in (%%y) do ( if not exist %%X set "avaiableMountPoint=%%X" )
+					) 
+				) 
+			) 
+		) 
+	)
+call:fromTheTop
+for %%i in (
+	"%inuse%"
+	"%unused%"
+	) do (
+	echo "%%~i"
+		
+		) 
+	)
+
+for %%A in (%unused%) do ( set noWinders=%%A )
+echo %noWinders%
+
+goto:eof
+if defined avaiableMountPoint (echo:available: %avaiableMountPoint%)
+
+goto:eof
+
+:subOne
+for %%a in (%avaiableMountPoint%) do ( 
+	subst %%a "%1"
+		)
+goto:eof
+
+
+:loggingSubsIsntNeeded
+rem no need to log any substitutions 
+rem all can get removed in one swoop
+rem see :cleanupSubstitutions
+
+goto:eof
+for %%a in (%inUnavail%) do ( 
+	echo %%a > subst.%gs%
+	subst %%a "C:\Program Files"
+)
+goto:eof
+
+goto:eof
+:cleanupGlobalSeed
+for %%i in (*%gs%*) do (del %%i)
+goto:eof
+
+        goto:eof
+
+goto:eof
+:cleanupSubstitutions
+for /f "tokens=* delims=:" %%i in ('subst') do ( subst /d %%~di )
+goto:eof
+
+
+
+goto:eof
+dir /b %inUnavail%
+for %%i in (*%gs%*) do (echo %%i)
+goto:eof
+
+goto:eof
+		if not exist %%Y: ( subst %%Y: "C:\Program Files" &set subbed=%%Y: )
+goto:eof
+
+
+
+goto:eof
+for %%U in (U) do ( if not exist %%U: ( subst U: "C:\Program Files" ) )	
+goto:eof
+
+goto:eof
+:fromTheTop
+rem	set whatever here to null 
+rem	otherwise it'll compund later on
+
+set inuse=
+set unused=
+
+setlocal enabledelayedexpansion
+for %%Z in (%%Z) do ( 
+	for %%Y in (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) do ( 
+	for %%X in (%%Y:) do ( 
+	for %%W in (%%X) do ( 
+	for %%z in (%%z) do ( if exist %%X set "inuse=%%X !inuse!" ) 
+	for %%y in (%%y) do ( if not exist %%X set "unused=%%X !unused!" )
+					) 
+				) 
+			) 
+		) 
+
+endlocal &set unused=%unused% &set inuse=%inuse%
+goto:eof
+
+
+
+goto:eof
+:originalReference
+@echo off
+subst U: "C:\Program Files"
+if not exist U:%app% md U:%app%
+pushd "%~dp0"
+copy .\%key%.key U:%app%
+for %%i in (setup\*.exe) do ( %%i )
+popd
+subst /d U:
+
+
